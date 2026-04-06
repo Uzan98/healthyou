@@ -1,0 +1,19 @@
+{
+  "name": "Health+ — Evolução Corporal",
+  "short_name": "Health+",
+  "description": "Acompanhe sua evolução corporal com fotos, métricas, gráficos e metas.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060b18",
+  "theme_color": "#060b18",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
