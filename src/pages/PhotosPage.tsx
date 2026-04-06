@@ -35,13 +35,33 @@ export default function PhotosPage() {
     }
   }
 
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file || !user) return; setUploading(true)
-    const ext = file.name.split('.').pop()
+    const file = e.target.files?.[0]; if (!file || !user) return
+
+    // Validação de tipo de arquivo (defense-in-depth — bucket também bloqueia)
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('Tipo de arquivo não permitido. Use JPEG, PNG, WebP, GIF ou HEIC.')
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
+    // Validação de tamanho (defense-in-depth — bucket limita a 10MB)
+    if (file.size > MAX_FILE_SIZE) {
+      alert('Arquivo muito grande. O tamanho máximo é 10MB.')
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
+    setUploading(true)
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${user.id}/${Date.now()}.${ext}`
     const { error: uploadError } = await supabase.storage.from('progress-photos').upload(path, file)
     if (uploadError) { alert('Erro ao fazer upload: ' + uploadError.message); setUploading(false); return }
-    await supabase.from('progress_photos').insert({ user_id: user.id, date: uploadDate, category: uploadCategory, storage_path: path, notes: uploadNotes || null })
+    const { error: insertError } = await supabase.from('progress_photos').insert({ user_id: user.id, date: uploadDate, category: uploadCategory, storage_path: path, notes: uploadNotes || null })
+    if (insertError) { alert('Erro ao salvar registro: ' + insertError.message); setUploading(false); return }
     setShowUpload(false); setUploadNotes(''); setUploading(false)
     if (fileRef.current) fileRef.current.value = ''
     loadPhotos()
@@ -50,7 +70,7 @@ export default function PhotosPage() {
   const deletePhoto = async (photo: Photo) => {
     if (!confirm('Excluir esta foto?')) return
     await supabase.storage.from('progress-photos').remove([photo.storage_path])
-    await supabase.from('progress_photos').delete().eq('id', photo.id); loadPhotos()
+    await supabase.from('progress_photos').delete().eq('id', photo.id).eq('user_id', user!.id); loadPhotos()
   }
 
   const filtered = filter === 'todas' ? photos : photos.filter(p => p.category === filter)

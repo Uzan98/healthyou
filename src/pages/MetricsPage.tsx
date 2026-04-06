@@ -43,7 +43,7 @@ export default function MetricsPage() {
     setForm(emptyForm); setShowForm(false); setSaving(false); loadMetrics()
   }
 
-  const deleteMetric = async (id: string) => { if (!confirm('Excluir este registro?')) return; await supabase.from('body_metrics').delete().eq('id', id); loadMetrics() }
+  const deleteMetric = async (id: string) => { if (!confirm('Excluir este registro?')) return; await supabase.from('body_metrics').delete().eq('id', id).eq('user_id', user!.id); loadMetrics() }
 
   const chartData = {
     labels: metrics.map(m => new Date(m.date+'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit', month:'short'})),
@@ -115,25 +115,25 @@ export default function MetricsPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-group"><label className="form-label">Data</label><input type="date" className="form-input" value={form.date} onChange={e => setForm({...form, date: e.target.value})} required /></div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label">Peso (kg)</label><input type="number" step="0.1" className="form-input" placeholder="80.0" value={form.weight_kg} onChange={e => setForm({...form, weight_kg: e.target.value})} /></div>
-              <div className="form-group"><label className="form-label">Gordura (%)</label><input type="number" step="0.1" className="form-input" placeholder="15.0" value={form.body_fat_pct} onChange={e => setForm({...form, body_fat_pct: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Peso (kg)</label><input type="number" step="0.1" min="0.1" max="499" className="form-input" placeholder="80.0" value={form.weight_kg} onChange={e => setForm({...form, weight_kg: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Gordura (%)</label><input type="number" step="0.1" min="0" max="100" className="form-input" placeholder="15.0" value={form.body_fat_pct} onChange={e => setForm({...form, body_fat_pct: e.target.value})} /></div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label">Peito (cm)</label><input type="number" step="0.1" className="form-input" value={form.chest_cm} onChange={e => setForm({...form, chest_cm: e.target.value})} /></div>
-              <div className="form-group"><label className="form-label">Cintura (cm)</label><input type="number" step="0.1" className="form-input" value={form.waist_cm} onChange={e => setForm({...form, waist_cm: e.target.value})} /></div>
-              <div className="form-group"><label className="form-label">Quadril (cm)</label><input type="number" step="0.1" className="form-input" value={form.hip_cm} onChange={e => setForm({...form, hip_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Peito (cm)</label><input type="number" step="0.1" min="0.1" max="299" className="form-input" value={form.chest_cm} onChange={e => setForm({...form, chest_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Cintura (cm)</label><input type="number" step="0.1" min="0.1" max="299" className="form-input" value={form.waist_cm} onChange={e => setForm({...form, waist_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Quadril (cm)</label><input type="number" step="0.1" min="0.1" max="299" className="form-input" value={form.hip_cm} onChange={e => setForm({...form, hip_cm: e.target.value})} /></div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label">Bíceps E (cm)</label><input type="number" step="0.1" className="form-input" value={form.bicep_left_cm} onChange={e => setForm({...form, bicep_left_cm: e.target.value})} /></div>
-              <div className="form-group"><label className="form-label">Bíceps D (cm)</label><input type="number" step="0.1" className="form-input" value={form.bicep_right_cm} onChange={e => setForm({...form, bicep_right_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Bíceps E (cm)</label><input type="number" step="0.1" min="0.1" max="99" className="form-input" value={form.bicep_left_cm} onChange={e => setForm({...form, bicep_left_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Bíceps D (cm)</label><input type="number" step="0.1" min="0.1" max="99" className="form-input" value={form.bicep_right_cm} onChange={e => setForm({...form, bicep_right_cm: e.target.value})} /></div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label">Coxa E (cm)</label><input type="number" step="0.1" className="form-input" value={form.thigh_left_cm} onChange={e => setForm({...form, thigh_left_cm: e.target.value})} /></div>
-              <div className="form-group"><label className="form-label">Coxa D (cm)</label><input type="number" step="0.1" className="form-input" value={form.thigh_right_cm} onChange={e => setForm({...form, thigh_right_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Coxa E (cm)</label><input type="number" step="0.1" min="0.1" max="149" className="form-input" value={form.thigh_left_cm} onChange={e => setForm({...form, thigh_left_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Coxa D (cm)</label><input type="number" step="0.1" min="0.1" max="149" className="form-input" value={form.thigh_right_cm} onChange={e => setForm({...form, thigh_right_cm: e.target.value})} /></div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label">Panturrilha E (cm)</label><input type="number" step="0.1" className="form-input" value={form.calf_left_cm} onChange={e => setForm({...form, calf_left_cm: e.target.value})} /></div>
-              <div className="form-group"><label className="form-label">Panturrilha D (cm)</label><input type="number" step="0.1" className="form-input" value={form.calf_right_cm} onChange={e => setForm({...form, calf_right_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Panturrilha E (cm)</label><input type="number" step="0.1" min="0.1" max="99" className="form-input" value={form.calf_left_cm} onChange={e => setForm({...form, calf_left_cm: e.target.value})} /></div>
+              <div className="form-group"><label className="form-label">Panturrilha D (cm)</label><input type="number" step="0.1" min="0.1" max="99" className="form-input" value={form.calf_right_cm} onChange={e => setForm({...form, calf_right_cm: e.target.value})} /></div>
             </div>
             <div className="form-group"><label className="form-label">Notas</label><textarea className="form-textarea" placeholder="Observações..." value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
             <div style={{ display:'flex', gap:12 }}>

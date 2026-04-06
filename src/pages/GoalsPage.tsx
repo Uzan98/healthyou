@@ -30,12 +30,12 @@ export default function GoalsPage() {
   }
 
   const updateValue = async (id: string) => {
-    await supabase.from('goals').update({ current_value: parseFloat(editValue) }).eq('id', id)
+    await supabase.from('goals').update({ current_value: parseFloat(editValue) }).eq('id', id).eq('user_id', user!.id)
     setEditId(null); setEditValue(''); load()
   }
 
-  const completeGoal = async (id: string) => { await supabase.from('goals').update({ status: 'concluida' }).eq('id', id); load() }
-  const deleteGoal = async (id: string) => { if (!confirm('Excluir meta?')) return; await supabase.from('goals').delete().eq('id', id); load() }
+  const completeGoal = async (id: string) => { await supabase.from('goals').update({ status: 'concluida' }).eq('id', id).eq('user_id', user!.id); load() }
+  const deleteGoal = async (id: string) => { if (!confirm('Excluir meta?')) return; await supabase.from('goals').delete().eq('id', id).eq('user_id', user!.id); load() }
 
   const active = goals.filter(g => g.status === 'ativa')
   const completed = goals.filter(g => g.status === 'concluida')
@@ -95,7 +95,7 @@ export default function GoalsPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-group"><label className="form-label">Título</label><input className="form-input" placeholder="Ex: Chegar a 80kg" value={form.title} onChange={e => setForm({...form, title: e.target.value})} required /></div>
             <div className="form-row">
-              <div className="form-group"><label className="form-label">Valor Alvo</label><input type="number" step="0.1" className="form-input" placeholder="80" value={form.target_value} onChange={e => setForm({...form, target_value: e.target.value})} required /></div>
+              <div className="form-group"><label className="form-label">Valor Alvo</label><input type="number" step="0.1" min="0.1" className="form-input" placeholder="80" value={form.target_value} onChange={e => setForm({...form, target_value: e.target.value})} required /></div>
               <div className="form-group"><label className="form-label">Unidade</label><select className="form-select" value={form.unit} onChange={e => setForm({...form, unit: e.target.value})}><option value="kg">kg</option><option value="cm">cm</option><option value="%">%</option><option value="min">min</option></select></div>
             </div>
             <div style={{display:'flex', gap:12}}>

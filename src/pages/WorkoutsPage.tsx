@@ -30,7 +30,7 @@ export default function WorkoutsPage() {
     setShowForm(false); setSaving(false); load()
   }
 
-  const del = async (id: string) => { if (!confirm('Excluir?')) return; await supabase.from('workouts').delete().eq('id', id); load() }
+  const del = async (id: string) => { if (!confirm('Excluir?')) return; await supabase.from('workouts').delete().eq('id', id).eq('user_id', user!.id); load() }
 
   const now = new Date(); const ws = new Date(now); ws.setDate(now.getDate() - now.getDay())
   const thisWeek = workouts.filter(w => new Date(w.date) >= ws)
@@ -69,7 +69,7 @@ export default function WorkoutsPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-group"><label className="form-label">Data</label><input type="date" className="form-input" value={form.date} onChange={e => setForm({...form, date: e.target.value})} required /></div>
             <div className="form-group"><label className="form-label">Tipo</label><select className="form-select" value={form.type} onChange={e => setForm({...form, type: e.target.value})}>{Object.entries(typeLabels).map(([k,l]) => <option key={k} value={k}>{l}</option>)}</select></div>
-            <div className="form-group"><label className="form-label">Duração (min)</label><input type="number" className="form-input" placeholder="60" value={form.duration_min} onChange={e => setForm({...form, duration_min: e.target.value})} /></div>
+            <div className="form-group"><label className="form-label">Duração (min)</label><input type="number" min="1" max="1440" className="form-input" placeholder="60" value={form.duration_min} onChange={e => setForm({...form, duration_min: e.target.value})} /></div>
             <div className="form-group"><label className="form-label">Notas</label><textarea className="form-textarea" placeholder="Ex: treino de peito..." value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
             <div style={{display:'flex', gap:12}}>
               <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><IconLoader size={15} className="icon-spin" /> Salvando...</> : <><IconSave size={15} /> Salvar</>}</button>
