@@ -1288,7 +1288,7 @@ img {
   .main-content {
     margin-left: 0;
     padding: 16px;
-    padding-top: 60px;
+    padding-top: calc(60px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -1580,7 +1580,7 @@ img {
 
   .main-content {
     padding: 12px;
-    padding-top: 20px;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 
