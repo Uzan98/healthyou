@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { Line } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js'
-import { IconPlus, IconRuler, IconTrendingUp, IconClipboard, IconTrash, IconSave, IconLoader, IconHeart } from '../components/Icons'
+import { IconPlus, IconRuler, IconTrendingUp, IconClipboard, IconTrash, IconSave, IconLoader, IconHeart, IconEdit } from '../components/Icons'
 import MeasurementGuide from '../components/MeasurementGuide'
 import HealthAlerts from '../components/HealthAlerts'
 
@@ -23,6 +23,7 @@ export default function MetricsPage() {
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(emptyForm)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [chartMetric, setChartMetric] = useState('weight_kg')
   const [tab, setTab] = useState<'historico'|'graficos'|'guia'>('historico')
@@ -39,8 +40,32 @@ export default function MetricsPage() {
     e.preventDefault(); if (!user) return; setSaving(true)
     const payload: Record<string,unknown> = { user_id: user.id, date: form.date, notes: form.notes || null }
     Object.entries(form).forEach(([key, val]) => { if (key !== 'date' && key !== 'notes' && val !== '') payload[key] = parseFloat(val as string) })
-    await supabase.from('body_metrics').insert(payload)
-    setForm(emptyForm); setShowForm(false); setSaving(false); loadMetrics()
+    if (editingId) {
+      await supabase.from('body_metrics').update(payload).eq('id', editingId).eq('user_id', user.id)
+    } else {
+      await supabase.from('body_metrics').insert(payload)
+    }
+    setForm(emptyForm); setShowForm(false); setEditingId(null); setSaving(false); loadMetrics()
+  }
+
+  const handleEdit = (m: Metric) => {
+    setEditingId(m.id)
+    setForm({
+      date: m.date,
+      weight_kg: m.weight_kg?.toString() || '',
+      body_fat_pct: m.body_fat_pct?.toString() || '',
+      chest_cm: m.chest_cm?.toString() || '',
+      waist_cm: m.waist_cm?.toString() || '',
+      hip_cm: m.hip_cm?.toString() || '',
+      bicep_left_cm: m.bicep_left_cm?.toString() || '',
+      bicep_right_cm: m.bicep_right_cm?.toString() || '',
+      thigh_left_cm: m.thigh_left_cm?.toString() || '',
+      thigh_right_cm: m.thigh_right_cm?.toString() || '',
+      calf_left_cm: m.calf_left_cm?.toString() || '',
+      calf_right_cm: m.calf_right_cm?.toString() || '',
+      notes: m.notes || ''
+    })
+    setShowForm(true)
   }
 
   const deleteMetric = async (id: string) => { if (!confirm('Excluir este registro?')) return; await supabase.from('body_metrics').delete().eq('id', id).eq('user_id', user!.id); loadMetrics() }
@@ -57,9 +82,9 @@ export default function MetricsPage() {
 
   return (
     <div className="animate-slide-up">
-      <div className="page-header" style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div className="page-header" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'16px' }}>
         <div><h1>Medidas Corporais</h1><p>Registre e acompanhe suas medidas</p></div>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}><IconPlus size={16} /> Nova Medida</button>
+        <button className="btn btn-primary" onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}><IconPlus size={16} /> Nova Medida</button>
       </div>
 
       <HealthAlerts
@@ -98,7 +123,7 @@ export default function MetricsPage() {
                 <td>{m.chest_cm||'—'}</td><td>{m.waist_cm||'—'}</td><td>{m.hip_cm||'—'}</td>
                 <td>{m.bicep_left_cm||m.bicep_right_cm ? `${m.bicep_left_cm||'—'} / ${m.bicep_right_cm||'—'}` : '—'}</td>
                 <td>{m.thigh_left_cm||m.thigh_right_cm ? `${m.thigh_left_cm||'—'} / ${m.thigh_right_cm||'—'}` : '—'}</td>
-                <td><button className="btn-icon" onClick={() => deleteMetric(m.id)} title="Excluir"><IconTrash size={15} /></button></td>
+                <td><div style={{display:'flex', gap:4}}><button className="btn-icon" onClick={() => handleEdit(m)} title="Editar"><IconEdit size={15} /></button><button className="btn-icon" onClick={() => deleteMetric(m.id)} title="Excluir"><IconTrash size={15} /></button></div></td>
               </tr>
             ))}
           </tbody></table></div>
@@ -111,7 +136,7 @@ export default function MetricsPage() {
 
       {showForm && (
         <div className="modal-overlay" onClick={() => setShowForm(false)}><div className="modal" onClick={e => e.stopPropagation()}>
-          <h2 className="modal-title">Nova Medida</h2>
+          <h2 className="modal-title">{editingId ? 'Editar Medida' : 'Nova Medida'}</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-group"><label className="form-label">Data</label><input type="date" className="form-input" value={form.date} onChange={e => setForm({...form, date: e.target.value})} required /></div>
             <div className="form-row">
@@ -138,7 +163,7 @@ export default function MetricsPage() {
             <div className="form-group"><label className="form-label">Notas</label><textarea className="form-textarea" placeholder="Observações..." value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
             <div style={{ display:'flex', gap:12 }}>
               <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><IconLoader size={15} className="icon-spin" /> Salvando...</> : <><IconSave size={15} /> Salvar</>}</button>
-              <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancelar</button>
+              <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setEditingId(null); setForm(emptyForm) }}>Cancelar</button>
             </div>
           </form>
         </div></div>

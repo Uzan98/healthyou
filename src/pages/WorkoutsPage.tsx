@@ -38,7 +38,7 @@ export default function WorkoutsPage() {
 
   return (
     <div className="animate-slide-up">
-      <div className="page-header" style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div className="page-header" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'16px' }}>
         <div><h1>Treinos</h1><p>Registre seus treinos e acompanhe a frequência</p></div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}><IconPlus size={16} /> Novo Treino</button>
       </div>

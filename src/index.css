@@ -127,6 +127,7 @@ img {
   padding: 32px;
   min-height: 100vh;
   position: relative;
+  min-width: 0;
 }
 
 .main-content::before {
@@ -610,6 +611,7 @@ img {
   overflow-x: auto;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
+  width: 100%;
 }
 
 .table {
